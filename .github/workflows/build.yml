@@ -6,7 +6,7 @@ on:
 jobs:
   install_pa_sources:
     name: install PA sources
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       # Set steps.os.outputs.image to the specific OS (e.g. 'ubuntu20')
       - name: Get operating system name and version.
@@ -24,20 +24,21 @@ jobs:
       - run: scripts/install_pulseaudio_sources_apt.sh
 
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     include:
 
-          - CC: gcc
+    #       - CC: gcc
 
-          - CC: clang
+    #       - CC: clang
 
-    name: build with ${{ matrix.CC }}
-    runs-on: ubuntu-latest
+    # name: build with ${{ matrix.CC }}
+    name: build
+    runs-on: ubuntu-22.04
     needs: install_pa_sources
     env:
-      CC: ${{ matrix.CC }}
+      # CC: ${{ matrix.CC }}
       CFLAGS: -Wall -Wextra -Werror
 
     steps:
@@ -58,3 +59,11 @@ jobs:
       - run: ./bootstrap
       - run: ./configure PULSE_DIR=~/pulseaudio.src
       - run: make
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: pulseaudio-module-xrdp
+          path: |
+            src/.libs/*.so
+            instfiles/*.sh
+            instfiles/*.desktop
